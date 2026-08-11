@@ -11,129 +11,56 @@
 <body class="bg-slate-100 text-slate-800 font-sans p-4" x-data="patientApp()">
     <div class="max-w-2xl mx-auto space-y-6 mt-4">
         
-        <!-- Khối hiển thị Mã QR chia sẻ website -->
+        <!-- QR Code -->
         <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
-            <div class="bg-slate-50 p-2 border rounded-xl flex items-center justify-center">
-                <!-- Sử dụng dịch vụ tạo QR tự động dựa trên URL hiện tại của trang -->
-                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(currentUrl)" alt="QR Code đăng ký khám bệnh" class="w-28 h-28 object-contain">
+            <div class="bg-slate-50 p-2 border rounded-xl">
+                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(currentUrl)" class="w-28 h-28">
             </div>
-            <div class="space-y-1 text-center sm:text-left">
-                <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">QUÉT MÃ QR ĐỂ ĐẶT KHÁM</span>
-                <h2 class="text-xs font-bold text-slate-700 mt-1">Dùng điện thoại mở camera để quét mã bên trái</h2>
-                <p class="text-[11px] text-slate-500">Hoặc truy cập nhanh đường dẫn:</p>
-                <a :href="currentUrl" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline break-all block" x-text="currentUrl"></a>
+            <div>
+                <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">QUÉT MÃ ĐỂ ĐẶT KHÁM</span>
+                <h2 class="text-xs font-bold text-slate-700 mt-1">Dùng điện thoại quét mã để đăng ký khám bệnh</h2>
             </div>
         </div>
 
         <!-- Form Đăng Ký -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 space-y-4">
-            <div class="text-center pb-3 border-b">
+            <div class="text-center border-b pb-3">
                 <h1 class="text-lg font-bold text-blue-900 uppercase">PHÒNG KHÁM NỘI BSCK1 LÊ HOÀNG PHI</h1>
-                <p class="text-xs text-slate-500 mt-1">Đăng Ký & Nhận Số Thứ Tự Khám Bệnh Trực Tuyến</p>
             </div>
-
             <form @submit.prevent="registerPatient()" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Ngày khám (*)</label>
-                    <input type="date" x-model="regForm.examDate" required class="w-full px-3 py-2 border rounded bg-white text-sm">
-                    <p class="text-[11px] text-blue-600 font-medium mt-0.5" x-text="'Hiển thị: ' + formatDateDDMMYYYY(regForm.examDate)"></p>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Họ tên bệnh nhân (*)</label>
-                    <input type="text" x-model="regForm.patientName" required placeholder="Nhập họ tên của bạn..." class="w-full px-3 py-2 border rounded bg-white text-sm">
-                </div>
+                <input type="date" x-model="regForm.examDate" required class="w-full px-3 py-2 border rounded">
+                <input type="text" x-model="regForm.patientName" required placeholder="Họ tên bệnh nhân..." class="w-full px-3 py-2 border rounded">
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Năm sinh (*)</label>
-                        <input type="text" x-model="regForm.birthYear" required placeholder="Ví dụ: 1985" class="w-full px-3 py-2 border rounded bg-white text-sm">
-                    </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Giới tính</label>
-                        <select x-model="regForm.gender" class="w-full px-3 py-2 border rounded bg-white text-sm">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Nhu cầu khám / Lý do (*)</label>
-                    <select x-model="regForm.symptoms" class="w-full px-3 py-2 border rounded bg-white text-sm font-semibold text-blue-900">
-                        <option value="Khám bệnh">Khám bệnh</option>
-                        <option value="Xét nghiệm">Xét nghiệm</option>
+                    <input type="text" x-model="regForm.birthYear" required placeholder="Năm sinh..." class="w-full px-3 py-2 border rounded">
+                    <select x-model="regForm.gender" class="w-full px-3 py-2 border rounded">
+                        <option value="Nam">Nam</option><option value="Nữ">Nữ</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg shadow text-sm transition">
-                    <i class="fa-solid fa-ticket mr-1"></i> XÁC NHẬN ĐĂNG KÝ & LẤY SỐ
-                </button>
+                <select x-model="regForm.symptoms" class="w-full px-3 py-2 border rounded font-semibold text-blue-900">
+                    <option value="Khám bệnh">Khám bệnh</option>
+                    <option value="Xét nghiệm">Xét nghiệm</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg">XÁC NHẬN ĐĂNG KÝ</button>
             </form>
         </div>
 
-        <!-- Thống Kê Danh Sách Đăng Ký -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 space-y-4">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-3 border-b gap-3">
-                <div>
-                    <h2 class="text-sm font-bold text-slate-800 uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-emerald-600"></i> Thống Kê Danh Sách Đăng Ký
-                    </h2>
-                    <p class="text-xs text-slate-500">Xem danh sách bệnh nhân đã đăng ký theo ngày</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <input type="date" x-model="filterDate" class="text-xs px-2.5 py-1.5 border rounded bg-slate-50 font-semibold">
-                </div>
-            </div>
-
-            <!-- Tổng hợp số liệu thống kê nhanh -->
-            <div class="grid grid-cols-3 gap-3 text-center">
-                <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                    <p class="text-[11px] text-slate-600 font-semibold">Tổng số đăng ký</p>
-                    <p class="text-lg font-bold text-blue-900 mt-0.5" x-text="filteredQueue.length"></p>
-                </div>
-                <div class="p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                    <p class="text-[11px] text-slate-600 font-semibold">Khám bệnh</p>
-                    <p class="text-lg font-bold text-amber-800 mt-0.5" x-text="filteredQueue.filter(i => i.symptoms === 'Khám bệnh').length"></p>
-                </div>
-                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
-                    <p class="text-[11px] text-slate-600 font-semibold">Xét nghiệm</p>
-                    <p class="text-lg font-bold text-emerald-800 mt-0.5" x-text="filteredQueue.filter(i => i.symptoms === 'Xét nghiệm').length"></p>
-                </div>
-            </div>
-
-            <!-- Bảng danh sách chi tiết -->
+        <!-- Danh Sách (Bảo vệ bằng mật khẩu) -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
+            <h2 class="text-sm font-bold uppercase mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-list text-emerald-600"></i> Danh Sách Bệnh Nhân
+            </h2>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-700 uppercase">
-                            <th class="p-2.5 border-b text-center w-12">STT</th>
-                            <th class="p-2.5 border-b">Họ và Tên</th>
-                            <th class="p-2.5 border-b text-center w-16">Giới</th>
-                            <th class="p-2.5 border-b text-center w-16">Năm Sinh</th>
-                            <th class="p-2.5 border-b text-center">Nhu Cầu</th>
-                            <th class="p-2.5 border-b text-center">Thao Tác</th>
-                        </tr>
-                    </thead>
+                <table class="w-full text-xs text-left">
+                    <thead><tr class="bg-slate-100 uppercase"><th class="p-2">STT</th><th class="p-2">Tên</th><th class="p-2">Nhu cầu</th><th class="p-2 text-center">Thao tác</th></tr></thead>
                     <tbody>
                         <template x-for="item in filteredQueue" :key="item.id">
-                            <tr class="border-b hover:bg-slate-50 transition">
-                                <td class="p-2.5 text-center">
-                                    <span class="inline-block bg-blue-600 text-white font-bold px-2 py-0.5 rounded text-xs" x-text="item.stt"></span>
-                                </td>
-                                <td class="p-2.5 font-bold text-slate-800" x-text="item.patientName"></td>
-                                <td class="p-2.5 text-center text-slate-600" x-text="item.gender"></td>
-                                <td class="p-2.5 text-center font-semibold text-slate-700" x-text="item.birthYear"></td>
-                                <td class="p-2.5 text-center">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                          :class="item.symptoms === 'Khám bệnh' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'"
-                                          x-text="item.symptoms"></span>
-                                </td>
-                                <td class="p-2.5 text-center">
-                                    <button @click="deleteItem(item.id)" class="text-red-500 hover:text-red-700 p-1" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                        </template>
-                        <template x-if="filteredQueue.length === 0">
-                            <tr>
-                                <td colspan="6" class="text-center py-8 text-slate-400 italic">
-                                    Không có bệnh nhân đăng ký trong ngày này.
+                            <tr class="border-b" :class="item.isCompleted ? 'bg-emerald-50' : ''">
+                                <td class="p-2 font-bold" x-text="item.stt"></td>
+                                <td class="p-2" :class="item.isCompleted ? 'line-through text-slate-400' : ''" x-text="item.patientName"></td>
+                                <td class="p-2" x-text="item.symptoms"></td>
+                                <td class="p-2 text-center flex justify-center gap-2">
+                                    <button @click="toggleStatus(item.id)" class="text-lg" :class="item.isCompleted ? 'text-emerald-600' : 'text-slate-300'"><i class="fa-solid fa-check-circle"></i></button>
+                                    <button @click="deleteItem(item.id)" class="text-red-500 text-lg"><i class="fa-solid fa-trash-can"></i></button>
                                 </td>
                             </tr>
                         </template>
@@ -141,58 +68,41 @@
                 </table>
             </div>
         </div>
-
     </div>
 
     <script>
         function patientApp() {
-            const today = new Date().toISOString().split('T')[0];
             return {
-                currentUrl: window.location.href,
-                filterDate: today,
-                regForm: { patientName: '', birthYear: '', gender: 'Nam', symptoms: 'Khám bệnh', examDate: today },
+                currentUrl: 'https://phongkhambsphi.github.io/dangkykb/',
+                filterDate: new Date().toISOString().split('T')[0],
+                regForm: { patientName: '', birthYear: '', gender: 'Nam', symptoms: 'Khám bệnh', examDate: new Date().toISOString().split('T')[0] },
                 queue: JSON.parse(localStorage.getItem('pk_reg_queue') || '[]'),
-
-                formatDateDDMMYYYY(dateStr) {
-                    if (!dateStr) return '';
-                    const parts = dateStr.split('-');
-                    if (parts.length === 3) {
-                        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-                    }
-                    return dateStr;
+                
+                checkAdmin() {
+                    const pass = prompt("Nhập mật khẩu Admin:");
+                    return pass === "123"; // MẬT KHẨU CỦA BẠN LÀ 123
                 },
 
-                get filteredQueue() {
-                    return this.queue.filter(item => item.examDate === this.filterDate);
-                },
+                get filteredQueue() { return this.queue.filter(i => i.examDate === this.filterDate); },
 
                 registerPatient() {
-                    if (!this.regForm.patientName || !this.regForm.birthYear || !this.regForm.examDate) {
-                        alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
-                        return;
-                    }
-                    
-                    const sameDayList = this.queue.filter(item => item.examDate === this.regForm.examDate);
-                    const newItem = {
-                        id: Date.now(),
-                        stt: sameDayList.length + 1,
-                        ...this.regForm,
-                        status: 'Chờ khám'
-                    };
-
+                    const newItem = { id: Date.now(), stt: this.filteredQueue.length + 1, ...this.regForm, isCompleted: false };
                     this.queue.unshift(newItem);
                     localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
-                    
-                    const formattedDate = this.formatDateDDMMYYYY(this.regForm.examDate);
-                    alert(`Đăng ký thành công!\nNgày khám: ${formattedDate}\nSố thứ tự của bạn là: ${newItem.stt}\nVui lòng chờ gọi tên.`);
-                    
-                    this.filterDate = this.regForm.examCode = this.regForm.examDate;
+                    alert("Đăng ký thành công!");
                     this.regForm.patientName = '';
-                    this.regForm.birthYear = '';
+                },
+
+                toggleStatus(id) {
+                    if(!this.checkAdmin()) return alert("Sai mật khẩu!");
+                    const item = this.queue.find(i => i.id === id);
+                    item.isCompleted = !item.isCompleted;
+                    localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
                 },
 
                 deleteItem(id) {
-                    if (confirm('Bạn có chắc muốn xóa lượt đăng ký này?')) {
+                    if(!this.checkAdmin()) return alert("Sai mật khẩu!");
+                    if(confirm("Xóa bệnh nhân này?")) {
                         this.queue = this.queue.filter(i => i.id !== id);
                         localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
                     }
