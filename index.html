@@ -3,112 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký Khám Bệnh - PHÒNG KHÁM NỘI BSCK1 LÊ HOÀNG PHI</title>
+    <title>Phòng Khám Bs Lê Hoàng Phi</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-100 text-slate-800 font-sans p-4" x-data="patientApp()">
-    <div class="max-w-2xl mx-auto space-y-6 mt-4">
-        
-        <!-- QR Code -->
-        <div class="bg-white p-4 rounded-2xl shadow-md border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
-            <div class="bg-slate-50 p-2 border rounded-xl">
-                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(currentUrl)" class="w-28 h-28">
-            </div>
-            <div>
-                <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full">QUÉT MÃ ĐỂ ĐẶT KHÁM</span>
-                <h2 class="text-xs font-bold text-slate-700 mt-1">Dùng điện thoại quét mã để đăng ký khám bệnh</h2>
-            </div>
-        </div>
-
-        <!-- Form Đăng Ký -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200 space-y-4">
-            <div class="text-center border-b pb-3">
-                <h1 class="text-lg font-bold text-blue-900 uppercase">PHÒNG KHÁM NỘI BSCK1 LÊ HOÀNG PHI</h1>
-            </div>
-            <form @submit.prevent="registerPatient()" class="space-y-3 text-xs">
-                <input type="date" x-model="regForm.examDate" required class="w-full px-3 py-2 border rounded">
-                <input type="text" x-model="regForm.patientName" required placeholder="Họ tên bệnh nhân..." class="w-full px-3 py-2 border rounded">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" x-model="regForm.birthYear" required placeholder="Năm sinh..." class="w-full px-3 py-2 border rounded">
-                    <select x-model="regForm.gender" class="w-full px-3 py-2 border rounded">
-                        <option value="Nam">Nam</option><option value="Nữ">Nữ</option>
-                    </select>
-                </div>
-                <select x-model="regForm.symptoms" class="w-full px-3 py-2 border rounded font-semibold text-blue-900">
-                    <option value="Khám bệnh">Khám bệnh</option>
-                    <option value="Xét nghiệm">Xét nghiệm</option>
-                </select>
-                <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 rounded-lg">XÁC NHẬN ĐĂNG KÝ</button>
-            </form>
-        </div>
-
-        <!-- Danh Sách (Bảo vệ bằng mật khẩu) -->
-        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-200">
-            <h2 class="text-sm font-bold uppercase mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-list text-emerald-600"></i> Danh Sách Bệnh Nhân
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left">
-                    <thead><tr class="bg-slate-100 uppercase"><th class="p-2">STT</th><th class="p-2">Tên</th><th class="p-2">Nhu cầu</th><th class="p-2 text-center">Thao tác</th></tr></thead>
-                    <tbody>
-                        <template x-for="item in filteredQueue" :key="item.id">
-                            <tr class="border-b" :class="item.isCompleted ? 'bg-emerald-50' : ''">
-                                <td class="p-2 font-bold" x-text="item.stt"></td>
-                                <td class="p-2" :class="item.isCompleted ? 'line-through text-slate-400' : ''" x-text="item.patientName"></td>
-                                <td class="p-2" x-text="item.symptoms"></td>
-                                <td class="p-2 text-center flex justify-center gap-2">
-                                    <button @click="toggleStatus(item.id)" class="text-lg" :class="item.isCompleted ? 'text-emerald-600' : 'text-slate-300'"><i class="fa-solid fa-check-circle"></i></button>
-                                    <button @click="deleteItem(item.id)" class="text-red-500 text-lg"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        function patientApp() {
-            return {
-                currentUrl: 'https://phongkhambsphi.github.io/dangkykb/',
-                filterDate: new Date().toISOString().split('T')[0],
-                regForm: { patientName: '', birthYear: '', gender: 'Nam', symptoms: 'Khám bệnh', examDate: new Date().toISOString().split('T')[0] },
-                queue: JSON.parse(localStorage.getItem('pk_reg_queue') || '[]'),
-                
-                checkAdmin() {
-                    const pass = prompt("Nhập mật khẩu Admin:");
-                    return pass === "123"; // MẬT KHẨU CỦA BẠN LÀ 123
-                },
-
-                get filteredQueue() { return this.queue.filter(i => i.examDate === this.filterDate); },
-
-                registerPatient() {
-                    const newItem = { id: Date.now(), stt: this.filteredQueue.length + 1, ...this.regForm, isCompleted: false };
-                    this.queue.unshift(newItem);
-                    localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
-                    alert("Đăng ký thành công!");
-                    this.regForm.patientName = '';
-                },
-
-                toggleStatus(id) {
-                    if(!this.checkAdmin()) return alert("Sai mật khẩu!");
-                    const item = this.queue.find(i => i.id === id);
-                    item.isCompleted = !item.isCompleted;
-                    localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
-                },
-
-                deleteItem(id) {
-                    if(!this.checkAdmin()) return alert("Sai mật khẩu!");
-                    if(confirm("Xóa bệnh nhân này?")) {
-                        this.queue = this.queue.filter(i => i.id !== id);
-                        localStorage.setItem('pk_reg_queue', JSON.stringify(this.queue));
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0b132b',
+                            900: '#0a0f24',
+                        }
                     }
                 }
             }
         }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#0a0f24] text-white min-h-screen">
+
+    <!-- ================= TRANG ĐẶT LỊCH (HÌNH 1) ================= -->
+    <div id="client-page" class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="max-w-7xl w-full mx-auto px-6 py-6 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full border-2 border-blue-400 flex items-center justify-center text-blue-400">
+                    <i data-lucide="heart" class="w-5 h-5 fill-current"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">Phòng Khám Bs Lê Hoàng Phi</span>
+            </div>
+            <button onclick="switchView('admin')" class="bg-white/10 hover:bg-white/20 transition text-sm py-2 px-4 rounded-xl flex items-center gap-2 border border-white/10">
+                Quản lý <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </header>
+
+        <!-- Main Hero -->
+        <main class="max-w-7xl w-full mx-auto px-6 py-8 flex-grow">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Left Column -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="inline-flex items-center gap-2 bg-blue-900/40 border border-blue-500/30 text-blue-300 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <i data-lucide="smartphone" class="w-4 h-4"></i> Đăng ký qua điện thoại
+                    </div>
+
+                    <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">
+                        Đặt Lịch Khám <br>
+                        <span class="text-cyan-400">Nhanh Chóng</span>
+                    </h1>
+
+                    <p class="text-gray-400 text-sm md:text-base max-w-xl">
+                        Quét mã QR bằng điện thoại để đăng ký khám bệnh và xét nghiệm. Không cần xếp hàng, không cần ghi giấy tờ.
+                    </p>
+
+                    <!-- Feature Badges -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+                            <i data-lucide="stethoscope" class="w-6 h-6 text-blue-400 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-sm">Khám Bệnh</div>
+                                <div class="text-xs text-gray-400">Tư vấn và điều trị</div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+                            <i data-lucide="flask-conical" class="w-6 h-6 text-blue-400 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-sm">Xét Nghiệm</div>
+                                <div class="text-xs text-gray-400">Các loại xét nghiệm</div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+                            <i data-lucide="shield-check" class="w-6 h-6 text-teal-400 shrink-0"></i>
+                            <div>
+                                <div class="font-bold text-sm">Bảo Mật</div>
+                                <div class="text-xs text-gray-400">Thông tin an toàn</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Info -->
+                    <div class="space-y-2 pt-4 text-sm text-gray-300">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
+                            <span>Thứ 2 – Thứ 7: <strong>17:00 – 20:00</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-gray-400"></i>
+                            <span>Chủ nhật: <strong>6:30 – 9:30</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column (QR Card) -->
+                <div class="lg:col-span-5 flex justify-center">
+                    <div class="bg-white text-gray-800 rounded-3xl p-8 shadow-2xl max-w-sm w-full text-center space-y-6">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Quét mã để đăng ký</p>
+                        
+                        <!-- QR Code Image -->
+                        <div class="bg-white p-2 rounded-2xl border border-gray-100 flex justify-center">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://medical-appointment.host/register" alt="Mã QR Đăng ký" class="w-52 h-52">
+                        </div>
+
+                        <div class="flex items-center justify-center gap-2 text-xs text-emerald-600 font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                            Đang hoạt động
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100 text-xs text-gray-400">
+                            Hoặc truy cập trực tiếp
+                            <a href="#" onclick="openModal(); return false;" class="block mt-1 text-blue-600 font-medium break-all hover:underline">
+                                https://medical-appointment-in2o.bolt.host/#register
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How it works -->
+            <div class="mt-20 pt-12 border-t border-white/5">
+                <h3 class="text-center text-lg font-semibold text-gray-300 mb-8">Cách thực hiện</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-blue-500/80 mb-2">01</div>
+                        <h4 class="font-bold mb-2">Quét mã QR</h4>
+                        <p class="text-xs text-gray-400">Mở camera điện thoại và quét mã QR hiển thị tại quầy</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-blue-500/80 mb-2">02</div>
+                        <h4 class="font-bold mb-2">Điền thông tin</h4>
+                        <p class="text-xs text-gray-400">Nhập họ tên, năm sinh, số điện thoại và chọn dịch vụ</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                        <div class="text-3xl font-bold text-blue-500/80 mb-2">03</div>
+                        <h4 class="font-bold mb-2">Chờ được gọi</h4>
+                        <p class="text-xs text-gray-400">Hệ thống ghi nhận và nhân viên sẽ gọi số của bạn</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= TRANG QUẢN LÝ (HÌNH 2) ================= -->
+    <div id="admin-page" class="hidden min-h-screen bg-gray-50 text-gray-800">
+        <!-- Admin Header -->
+        <header class="bg-blue-600 text-white px-8 py-4 flex justify-between items-center shadow-md">
+            <div>
+                <h1 class="text-xl font-bold">Quản Lý Lịch Hẹn</h1>
+                <p class="text-xs text-blue-100">Phòng Khám – Hệ thống tiếp nhận bệnh nhân</p>
+            </div>
+            <button onclick="switchView('client')" class="bg-white/20 hover:bg-white/30 text-xs text-white px-4 py-2 rounded-lg transition">
+                Về trang chủ
+            </button>
+        </header>
+
+        <main class="max-w-6xl mx-auto px-6 py-8 space-y-6">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="stat-total">1</div>
+                        <div class="text-xs text-gray-500">Tổng lịch hẹn</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="stat-pending">1</div>
+                        <div class="text-xs text-gray-500">Chờ khám</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                        <i data-lucide="refresh-cw" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="stat-processing">0</div>
+                        <div class="text-xs text-gray-500">Đang khám</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold" id="stat-completed">0</div>
+                        <div class="text-xs text-gray-500">Hoàn thành</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls & Filters -->
+            <div class="flex flex-wrap justify-between items-center gap-4 pt-2">
+                <div class="flex items-center gap-2 bg-gray-200/60 p-1 rounded-xl text-xs font-medium">
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm">Tất cả</button>
+                    <button class="text-gray-600 hover:text-gray-900 px-4 py-2">Khám bệnh</button>
+                    <button class="text-gray-600 hover:text-gray-900 px-4 py-2">Xét Nghiệm</button>
+                </div>
+
+                <button onclick="renderAdminList()" class="bg-white border border-gray-200 text-xs font-medium text-gray-700 px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-gray-50">
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> Làm mới
+                </button>
+            </div>
+
+            <!-- List -->
+            <div id="patient-list" class="space-y-3">
+                <!-- Javascript rendered -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form Đăng Ký Khám -->
+    <div id="register-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white text-gray-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-gray-900">Đăng Ký Khám Bệnh</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="booking-form" onsubmit="handleBooking(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Họ và tên</label>
+                    <input type="text" id="fullname" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nguyễn Văn A">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Giới tính</label>
+                        <select id="gender" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Năm sinh</label>
+                        <input type="number" id="yob" required min="1900" max="2026" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="1990">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Số điện thoại</label>
+                    <input type="tel" id="phone" required class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0909xxxxxx">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Dịch vụ</label>
+                    <select id="service" class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="Khám bệnh">Khám bệnh</option>
+                        <option value="Xét Nghiệm">Xét Nghiệm</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition">
+                    Xác nhận đăng ký
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- App Script -->
+    <script>
+        // Dữ liệu giả lập ban đầu giống hệt hình 2
+        let appointments = [
+            {
+                id: 1,
+                name: 'Nguyễn Văn An',
+                gender: 'Nam',
+                yob: 1970,
+                phone: '0909954918',
+                service: 'Khám bệnh',
+                time: '09:20:36 12/8/2026',
+                status: 'Chờ khám' // Chờ khám, Đang khám, Hoàn thành
+            }
+        ];
+
+        function switchView(view) {
+            if (view === 'admin') {
+                document.getElementById('client-page').classList.add('hidden');
+                document.getElementById('admin-page').classList.remove('hidden');
+                renderAdminList();
+            } else {
+                document.getElementById('admin-page').classList.add('hidden');
+                document.getElementById('client-page').classList.remove('hidden');
+            }
+        }
+
+        function openModal() {
+            document.getElementById('register-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('register-modal').classList.add('hidden');
+        }
+
+        function handleBooking(e) {
+            e.preventDefault();
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+            
+            const newApp = {
+                id: Date.now(),
+                name: document.getElementById('fullname').value,
+                gender: document.getElementById('gender').value,
+                yob: document.getElementById('yob').value,
+                phone: document.getElementById('phone').value,
+                service: document.getElementById('service').value,
+                time: timeStr,
+                status: 'Chờ khám'
+            };
+
+            appointments.unshift(newApp);
+            closeModal();
+            document.getElementById('booking-form').reset();
+            alert('Đăng ký thành công! Hệ thống đã ghi nhận.');
+        }
+
+        function updateStatus(id, newStatus) {
+            const item = appointments.find(a => a.id === id);
+            if (item) {
+                item.status = newStatus;
+                renderAdminList();
+            }
+        }
+
+        function renderAdminList() {
+            const listContainer = document.getElementById('patient-list');
+            listContainer.innerHTML = '';
+
+            // Cập nhật thống kê
+            document.getElementById('stat-total').innerText = appointments.length;
+            document.getElementById('stat-pending').innerText = appointments.filter(a => a.status === 'Chờ khám').length;
+            document.getElementById('stat-processing').innerText = appointments.filter(a => a.status === 'Đang khám').length;
+            document.getElementById('stat-completed').innerText = appointments.filter(a => a.status === 'Hoàn thành').length;
+
+            appointments.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4";
+                
+                let badgeColor = "bg-amber-100 text-amber-800";
+                if(item.status === 'Đang khám') badgeColor = "bg-cyan-100 text-cyan-800";
+                if(item.status === 'Hoàn thành') badgeColor = "bg-emerald-100 text-emerald-800";
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <i data-lucide="stethoscope" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-900">${item.name}</span>
+                                <span class="text-xs text-gray-400">• ${item.gender} • Sinh ${item.yob}</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs mt-1">
+                                <span class="text-gray-500 font-mono">${item.phone}</span>
+                                <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-medium text-[11px]">${item.service}</span>
+                            </div>
+                            <div class="text-[11px] text-gray-400 mt-1">${item.time}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <select onchange="updateStatus(${item.id}, this.value)" class="text-xs font-semibold px-3 py-1.5 rounded-full border-0 cursor-pointer ${badgeColor} outline-none">
+                            <option value="Chờ khám" ${item.status === 'Chờ khám' ? 'selected' : ''}>Chờ khám 🕒</option>
+                            <option value="Đang khám" ${item.status === 'Đang khám' ? 'selected' : ''}>Đang khám 🔄</option>
+                            <option value="Hoàn thành" ${item.status === 'Hoàn thành' ? 'selected' : ''}>Hoàn thành ✅</option>
+                        </select>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Khởi tạo icon Lucide
+        lucide.createIcons();
     </script>
 </body>
 </html>
